@@ -51,12 +51,6 @@ type SsmDataChannel struct {
 
 // Open creates the web socket connection with the AWS service and opens the data channel.
 func (c *SsmDataChannel) Open(cfg aws.Config, in *ssm.StartSessionInput) error {
-	c.handshakeCh = make(chan bool, 1)
-	c.outMsgBuf = NewMessageBuffer(50)
-	c.inMsgBuf = NewMessageBuffer(50)
-
-	go c.processOutboundQueue()
-
 	return c.startSession(cfg, in)
 }
 
@@ -469,6 +463,12 @@ func (c *SsmDataChannel) startSession(cfg aws.Config, in *ssm.StartSessionInput)
 }
 
 func (c *SsmDataChannel) StartSessionFromDataChannelURL(url string, token string) error {
+	c.handshakeCh = make(chan bool, 1)
+	c.outMsgBuf = NewMessageBuffer(50)
+	c.inMsgBuf = NewMessageBuffer(50)
+
+	go c.processOutboundQueue()
+
 	ws, _, err := websocket.DefaultDialer.Dial(url, http.Header{}) //nolint:bodyclose
 	if err != nil {
 		return err
