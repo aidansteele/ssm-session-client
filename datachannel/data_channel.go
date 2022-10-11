@@ -78,7 +78,7 @@ func (c *SsmDataChannel) WaitForHandshakeComplete() error {
 			c.handshakeCh = nil
 			return nil
 		default:
-			n, err := c.Read(buf)
+			n, err := c.ReadMsg(buf)
 			if err != nil {
 				return err
 			}
@@ -90,9 +90,9 @@ func (c *SsmDataChannel) WaitForHandshakeComplete() error {
 	}
 }
 
-// Read will get a single message from the websocket connection. The unprocessed message is copied to the
+// ReadMsg will get a single message from the websocket connection. The unprocessed message is copied to the
 // requested []byte (which should be sized to handle at least 1536 bytes).
-func (c *SsmDataChannel) Read(data []byte) (int, error) {
+func (c *SsmDataChannel) ReadMsg(data []byte) (int, error) {
 	_, msg, err := c.ws.ReadMessage()
 	n := copy(data[:len(msg)], msg)
 
@@ -118,7 +118,7 @@ func (c *SsmDataChannel) WriteTo(w io.Writer) (n int64, err error) {
 	var payload []byte
 
 	for {
-		nr, err = c.Read(buf)
+		nr, err = c.ReadMsg(buf)
 		if err != nil {
 			log.Printf("WriteTo read error: %v", err)
 			return n, err
